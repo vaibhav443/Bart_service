@@ -1,8 +1,10 @@
 from transformers import pipeline
 
-classifier = pipeline("zero-shot-classification",
-                      model="facebook/bart-large-mnli")
+classifier1 = pipeline("zero-shot-classification",
+                       model="facebook/bart-large-mnli")
 
+classifier2 = pipeline("zero-shot-classification",
+                       model="joeddav/xlm-roberta-large-xnli")
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -11,6 +13,7 @@ from pydantic import BaseModel
 class Payload(BaseModel):
     text: str
     keyword: List[str]
+    lang: str  # 'en' for english, 'fr' for french etc...
 
 
 app = FastAPI()
@@ -25,5 +28,7 @@ def bart_service(input: Payload):
             keyword: list with one element in case of grading
              (multiple elements in case of topic classification)
     """
-
-    return classifier(input.text, input.keyword)
+    if (input.lang == 'en'):
+        return classifier1(input.text, input.keyword)
+    else:
+        return classifier2(input.text, input.keyword)
